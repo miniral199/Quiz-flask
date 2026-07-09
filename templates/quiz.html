@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Викторина</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+        input{
+            font-size:18px;
+            padding: 10px;
+            width:250px;
+        }
+        button{
+            font-size:18px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .result{
+            font-size:20px;
+            margin-top: 20px;
+        }
+        .correct{color:green;}
+        .wrong{color:red;}
+        .score{
+            font-size:16px;
+            color:gray;
+            margin-top:10px;
+        }
+        .hint{
+            font-size:14px;
+            color:gray;
+            margin-top:10px;
+        }
+    </style>
+</head>
+<body>
+    {% if finished %}
+        <h1>Викторина окончена!</h1>
+        <p class="result" style="color:blue;">Итог: {{score}} из {{total}}</p>
+        <p class="hint"> Нажмите Enter, чтобы пройти заново</p>
+        <a href="{{url_for('restart')}}">Пройти заново</a>
+    {% elif show_result %}
+        <h1> {{question}} </h1>
+        <p class="score"> Вопрос {{current}} из {{ total }} | Счёт: {{score}}</p>
+        <p class="result {{color}}">{{result }}</p>
+        <p class="hint">Нажмите Enter, чтобы продолжить </p>
+    {% else %}
+        <h1> {{question}}</h1>
+        <p class="score"> Вопрос {{current}} из {{total}}| Счёт:{{score}}</p>
+        <form method="POST" id="quizForm">
+            <input type="text" name="answer" id="answerInput" placeholder="Ваш ответ" autofocus>
+            <br><br>
+            <button type="submit"> Проверить </button>
+        </form>
+        {% if result %}
+            <p class= "result {{color}}"> {{result}}</p>
+        {%endif%}
+    {%endif%}
+
+     <script>
+        // Если показан результат - жмём Enter для продолжения
+        {% if show_result %}
+            document.addEventListener("keydown",function(e){
+                if(e.key ==="Enter"){
+                    window.location.href = "{{ url_for('next_question')}}";
+                }
+            });
+        {% endif %}
+
+        // Если финиш - жмём Enter для рестарта
+        {% if finished %}
+            document.addEventListener("keydown",function(e){
+                if (e.key === "Enter"){
+                    window.location.href = "{{ url_for('restart')}}";
+                }
+            });
+        {% endif %}
+    </script>
+
+</body>
+</html>
