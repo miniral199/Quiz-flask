@@ -1,84 +1,211 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Викторина</title>
     <style>
-        body{
-            font-family: Arial, sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            margin-top: 100px;
         }
-        input{
-            font-size:18px;
-            padding: 10px;
-            width:250px;
+
+        h1 {
+            font-size: 26px;
+            color: #333;
+            margin-bottom: 20px;
         }
-        button{
-            font-size:18px;
-            padding: 10px 20px;
+
+        .score {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 25px;
+            background: #f5f5f5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .result {
+            font-size: 22px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: #27ae60;
+        }
+
+        .wrong {
+            color: #e74c3c;
+        }
+
+        .hint {
+            font-size: 14px;
+            color: #aaa;
+            margin: 10px 0 20px;
+        }
+
+        input {
+            font-size: 18px;
+            padding: 14px 18px;
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            transition: border 0.3s;
+            text-align: center;
+        }
+
+        input:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
         }
-        .result{
-            font-size:20px;
-            margin-top: 20px;
+
+        button:active {
+            transform: scale(0.97);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
         }
-        .correct{color:green;}
-        .wrong{color:red;}
-        .score{
-            font-size:16px;
-            color:gray;
-            margin-top:10px;
+
+        .btn-restart {
+            background: #95a5a6 !important;
+            font-size: 14px !important;
+            padding: 8px 20px !important;
+            width: auto !important;
         }
-        .hint{
-            font-size:14px;
-            color:gray;
-            margin-top:10px;
+
+        .final-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .link-button {
+            display: inline-block;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            input {
+                font-size: 16px;
+                padding: 12px 14px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+
+            .final-score {
+                font-size: 40px;
+            }
         }
     </style>
 </head>
 <body>
-    {% if finished %}
-        <h1>Викторина окончена!</h1>
-        <p class="result" style="color:blue;">Итог: {{score}} из {{total}}</p>
-        <p class="hint"> Нажмите Enter, чтобы пройти заново</p>
-        <a href="{{url_for('restart')}}">Пройти заново</a>
-    {% elif show_result %}
-        <h1> {{question}} </h1>
-        <p class="score"> Вопрос {{current}} из {{ total }} | Счёт: {{score}}</p>
-        <p class="result {{color}}">{{result }}</p>
-        <p class="hint">Нажмите Enter, чтобы продолжить </p>
-    {% else %}
-        <h1> {{question}}</h1>
-        <p class="score"> Вопрос {{current}} из {{total}}| Счёт:{{score}}</p>
-        <form method="POST" id="quizForm">
-            <input type="text" name="answer" id="answerInput" placeholder="Ваш ответ" autofocus>
-            <br><br>
-            <button type="submit"> Проверить </button>
-        </form>
-        {% if result %}
-            <p class= "result {{color}}"> {{result}}</p>
-        {%endif%}
-    {%endif%}
+    <div class="container">
+        {% if finished %}
+            <h1>🏆 Викторина окончена!</h1>
+            <div class="final-score">{{ score }}/{{ total }}</div>
+            <p class="hint">Нажмите Enter или кнопку, чтобы пройти заново</p>
+            <a href="{{ url_for('restart') }}" class="link-button">
+                <button>🔄 Пройти заново</button>
+            </a>
 
-     <script>
-        // Если показан результат - жмём Enter для продолжения
+        {% elif show_result %}
+            <h1>{{ question }}</h1>
+            <p class="score">Вопрос {{ current }} из {{ total }} | Счёт: {{ score }}</p>
+            <p class="result {{ color }}">
+                {% if color == 'correct' %}✅{% else %}❌{% endif %} {{ result }}
+            </p>
+            <p class="hint">Нажмите Enter или кнопку, чтобы продолжить</p>
+            <a href="{{ url_for('next_question') }}" class="link-button">
+                <button>▶ Продолжить</button>
+            </a>
+            <br>
+            <a href="{{ url_for('restart') }}">
+                <button class="btn-restart">🔄 Начать заново</button>
+            </a>
+
+        {% else %}
+            <h1>{{ question }}</h1>
+            <p class="score">Вопрос {{ current }} из {{ total }} | Счёт: {{ score }}</p>
+            <form method="POST" id="quizForm">
+                <input type="text" name="answer" id="answerInput" placeholder="Ваш ответ" autofocus>
+                <br><br>
+                <button type="submit">✔ Проверить</button>
+            </form>
+            <br>
+            <a href="{{ url_for('restart') }}">
+                <button type="button" class="btn-restart">🔄 Начать заново</button>
+            </a>
+            {% if result %}
+                <p class="result {{ color }}">{{ result }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script>
         {% if show_result %}
-            document.addEventListener("keydown",function(e){
-                if(e.key ==="Enter"){
-                    window.location.href = "{{ url_for('next_question')}}";
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    window.location.href = "{{ url_for('next_question') }}";
                 }
             });
         {% endif %}
 
-        // Если финиш - жмём Enter для рестарта
         {% if finished %}
-            document.addEventListener("keydown",function(e){
-                if (e.key === "Enter"){
-                    window.location.href = "{{ url_for('restart')}}";
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    window.location.href = "{{ url_for('restart') }}";
                 }
             });
         {% endif %}
     </script>
-
 </body>
 </html>

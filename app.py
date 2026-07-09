@@ -1,26 +1,30 @@
-from flask import Flask,request, render_template,session, redirect,url_for
+from flask import Flask, request, render_template, session, redirect, url_for
 from questions import questions
+import random
 
-app=Flask(__name__)
-app.secret_key="секретный ключ для сесcий"
-
-
-
+app = Flask(__name__)
+app.secret_key = "секретный ключ для сессий"
 
 
-@app.route("/", methods=["GET","POST"])
+@app.route("/", methods=["GET", "POST"])
 def quiz():
-    if "current" not in session:
-        session["current"]=0
-        session["score"]=0
-        session["result"]=None
-        session["color"]=None
+    # Если нет order или current — полная инициализация
+    if "current" not in session or "order" not in session:
+        session["current"] = 0
+        session["score"] = 0
+        session["result"] = None
+        session["color"] = None
+        shuffled = questions.copy()
+        random.shuffle(shuffled)
+        session["order"] = [q["question"] for q in shuffled]
+        session["answers"] = [q["answer"] for q in shuffled]
 
-    current=session["current"]
-    score=session["score"]
-    total=len(questions)
+    current = session["current"]
+    score = session["score"]
+    total = len(session["order"])
+    question_text = session["order"][current] if current < total else ""
+    correct_answer = session["answers"][current] if current < total else ""
 
-    #если викторина закончена
     if current >= total:
         return render_template(
             "quiz.html",
@@ -28,14 +32,16 @@ def quiz():
             score=score,
             total=total
         )
+
     result = session.get("result")
-    color= session.get("color")
+    color = session.get("color")
 
     if result:
+        prev_question = session["order"][current - 1]
         return render_template(
             "quiz.html",
             show_result=True,
-            question=questions[current-1]["question"],
+            question=prev_question,
             current=current,
             total=total,
             score=score,
@@ -43,47 +49,47 @@ def quiz():
             color=color
         )
 
+    if request.method == "POST":
+        user_answer = request.form.get("answer", "").strip().lower()
 
-    if request.method=="POST":
-        user_answer=request.form.get("answer","").strip().lower()
-        correct_answer=questions[current]["answer"]
-
-        if user_answer == correct_answer:
-            result="Правильно!"
-            color="correct"
-            session["score"]+=1
+        if user_answer == correct_answer.lower():
+            result = "Правильно!"
+            color = "correct"
+            session["score"] += 1
         else:
-            result=f"Неправильно. Правильный ответ:{correct_answer.title()}"
-            color="wrong"
+            result = f"Неправильно. Правильный ответ: {correct_answer.title()}"
+            color = "wrong"
 
-        session["result"]=result
-        session["color"]=color
-        session["current"]+=1
-        session.modified=True
+        session["result"] = result
+        session["color"] = color
+        session["current"] += 1
+        session.modified = True
         return redirect(url_for("quiz"))
 
     return render_template(
         "quiz.html",
         show_result=False,
-        question=questions[current]["question"],
-        current=current+1,
+        question=question_text,
+        current=current + 1,
         total=total,
         score=score,
         result=None,
         color=None
     )
 
+
 @app.route("/next")
 def next_question():
-    # Очищаем результат и переходим на главную
-    session['result']=None
-    session["color"]=None
+    session["result"] = None
+    session["color"] = None
     return redirect(url_for("quiz"))
+
 
 @app.route("/restart")
 def restart():
     session.clear()
     return redirect(url_for("quiz"))
 
-if __name__=="__main__":
-    app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0")
