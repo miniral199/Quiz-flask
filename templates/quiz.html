@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,96 +22,153 @@
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
             padding: 40px 30px;
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         h1 {
             font-size: 26px;
-            color: #333;
+            color: #1a1a2e;
             margin-bottom: 20px;
+            line-height: 1.4;
+            font-weight: 700;
         }
 
         .score {
-            font-size: 14px;
-            color: #999;
+            font-size: 13px;
+            color: #666;
             margin-bottom: 25px;
-            background: #f5f5f5;
-            padding: 8px 16px;
+            background: #f0f0f5;
+            padding: 8px 18px;
             border-radius: 20px;
             display: inline-block;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .result {
-            font-size: 22px;
+            font-size: 24px;
             margin: 20px 0;
-            font-weight: bold;
+            font-weight: 700;
         }
 
-        .correct {
-            color: #27ae60;
-        }
-
-        .wrong {
-            color: #e74c3c;
-        }
+        .correct { color: #00b894; }
+        .wrong { color: #e17055; }
 
         .hint {
             font-size: 14px;
-            color: #aaa;
+            color: #999;
             margin: 10px 0 20px;
         }
 
-        input {
-            font-size: 18px;
-            padding: 14px 18px;
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            font-size: 17px;
+            padding: 16px 20px;
+            border: 2px solid #e8e8ee;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 500;
             width: 100%;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            outline: none;
-            transition: border 0.3s;
+            background: white;
+            color: #1a1a2e;
+            transition: all 0.3s ease;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        input:focus {
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .option-btn:hover {
             border-color: #667eea;
+            background: #f8f7ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
         }
 
-        button {
-            font-size: 18px;
-            padding: 14px 30px;
+        .option-btn:hover::before {
+            opacity: 1;
+        }
+
+        .option-btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            font-size: 17px;
+            padding: 15px 30px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            letter-spacing: 0.5px;
         }
 
-        button:active {
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
             transform: scale(0.97);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
         }
 
         .btn-restart {
-            background: #95a5a6 !important;
-            font-size: 14px !important;
-            padding: 8px 20px !important;
+            background: rgba(149, 165, 166, 0.15) !important;
+            color: #666 !important;
+            font-size: 13px !important;
+            padding: 10px 20px !important;
             width: auto !important;
+            border: 1px solid #ddd !important;
+            border-radius: 10px !important;
+            box-shadow: none !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        .btn-restart:hover {
+            background: rgba(149, 165, 166, 0.25) !important;
+            border-color: #bbb !important;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         .final-score {
-            font-size: 48px;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 20px 0;
         }
 
@@ -121,28 +178,35 @@
             width: 100%;
         }
 
+        .emoji-big {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 480px) {
             .container {
-                padding: 25px 20px;
-                border-radius: 16px;
+                padding: 30px 20px;
+                border-radius: 20px;
             }
 
             h1 {
-                font-size: 22px;
+                font-size: 20px;
             }
 
-            input {
-                font-size: 16px;
-                padding: 12px 14px;
+            .option-btn {
+                font-size: 15px;
+                padding: 14px 16px;
+                border-radius: 12px;
             }
 
-            button {
-                font-size: 16px;
-                padding: 12px 20px;
+            .btn-primary {
+                font-size: 15px;
+                padding: 14px 20px;
             }
 
             .final-score {
-                font-size: 40px;
+                font-size: 44px;
             }
         }
     </style>
@@ -150,11 +214,17 @@
 <body>
     <div class="container">
         {% if finished %}
-            <h1>🏆 Викторина окончена!</h1>
+            <span class="emoji-big">🏆</span>
+            <h1>Викторина окончена!</h1>
             <div class="final-score">{{ score }}/{{ total }}</div>
+            {% if last_result %}
+                <p class="result {{ last_color }}">
+                    {% if last_color == 'correct' %}✅{% else %}❌{% endif %} {{ last_result }}
+                </p>
+            {% endif %}
             <p class="hint">Нажмите Enter или кнопку, чтобы пройти заново</p>
             <a href="{{ url_for('restart') }}" class="link-button">
-                <button>🔄 Пройти заново</button>
+                <button class="btn-primary">🔄 Пройти заново</button>
             </a>
 
         {% elif show_result %}
@@ -165,7 +235,7 @@
             </p>
             <p class="hint">Нажмите Enter или кнопку, чтобы продолжить</p>
             <a href="{{ url_for('next_question') }}" class="link-button">
-                <button>▶ Продолжить</button>
+                <button class="btn-primary">▶ Продолжить</button>
             </a>
             <br>
             <a href="{{ url_for('restart') }}">
@@ -176,17 +246,19 @@
             <h1>{{ question }}</h1>
             <p class="score">Вопрос {{ current }} из {{ total }} | Счёт: {{ score }}</p>
             <form method="POST" id="quizForm">
-                <input type="text" name="answer" id="answerInput" placeholder="Ваш ответ" autofocus>
-                <br><br>
-                <button type="submit">✔ Проверить</button>
+                <input type="hidden" name="answer" id="answerInput">
+                <div class="options">
+                    {% for option in options %}
+                        <button type="submit" class="option-btn" onclick="document.getElementById('answerInput').value='{{ option }}'">
+                            {{ option }}
+                        </button>
+                    {% endfor %}
+                </div>
             </form>
             <br>
             <a href="{{ url_for('restart') }}">
                 <button type="button" class="btn-restart">🔄 Начать заново</button>
             </a>
-            {% if result %}
-                <p class="result {{ color }}">{{ result }}</p>
-            {% endif %}
         {% endif %}
     </div>
 

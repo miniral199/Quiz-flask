@@ -3,6 +3,7 @@ from gigachat import GigaChat
 from dotenv import load_dotenv
 import os
 import json
+import random
 
 load_dotenv()
 
@@ -21,8 +22,11 @@ def get_questions(topic, count):
     prompt = f"""
     Сгенерируй {count} вопросов для викторины на тему "{topic}".
     Верни ТОЛЬКО JSON-массив в таком формате:
-    [{{"question": "Вопрос?", "answer": "правильный ответ"}}]
-    Ответы должны быть краткими (1-3 слова).
+    [{{"question": "Вопрос?", "answer": "правильный ответ", "options": ["неправильный1", "неправильный2", "неправильный3"]}}]
+    Правила:
+    - "answer" — правильный ответ, КРАТКИЙ: 1-3 слова.
+    - "options" — ТРИ неверных, но правдоподобных варианта ответа, тоже кратких.
+    - Всего 4 варианта: 1 правильный + 3 неверных.
     Не добавляй комментарии, только JSON.
     """
 
@@ -73,17 +77,32 @@ def quiz():
     score = session["score"]
     total = len(questions)
 
+    result = session.get("result")
+    color = session.get("color")
+
+    # Если есть результат и викторина окончена — показываем итог
+    if current >= total and result:
+        return render_template(
+            "quiz.html",
+            finished=True,
+            score=score,
+            total=total,
+            last_result=result,
+            last_color=color
+        )
+
+    # Если викторина окончена без результата (после /next)
     if current >= total:
         return render_template(
             "quiz.html",
             finished=True,
             score=score,
-            total=total
+            total=total,
+            last_result=None,
+            last_color=None
         )
 
-    result = session.get("result")
-    color = session.get("color")
-
+    # Показываем результат текущего ответа
     if result:
         prev_question = questions[current - 1]["question"]
         return render_template(
@@ -101,12 +120,30 @@ def quiz():
         user_answer = request.form.get("answer", "").strip().lower()
         correct_answer = questions[current]["answer"]
 
-        if user_answer == correct_answer.lower():
+        # Умная проверка
+        correct_lower = correct_answer.lower().strip()
+
+        stop_words = {"в", "на", "из", "под", "над", "около", "возле", "это", "город", "страна", "государство"}
+        user_words = [w for w in user_answer.split() if w not in stop_words]
+        user_clean = " ".join(user_words)
+
+        is_correct = (
+            user_answer == correct_lower or
+            user_clean == correct_lower or
+            user_answer in correct_lower or
+            correct_lower in user_answer or
+            user_clean in correct_lower or
+            correct_lower in user_clean or
+            any(word in correct_lower for word in user_words if len(word) > 2) or
+            any(word in user_clean for word in correct_lower.split() if len(word) > 2)
+        )
+
+        if is_correct:
             result = "Правильно!"
             color = "correct"
             session["score"] += 1
         else:
-            result = f"Неправильно. Правильный ответ: {correct_answer.title()}"
+            result = f"Неправильно. Правильный ответ: {correct_answer}"
             color = "wrong"
 
         session["result"] = result
@@ -115,10 +152,15 @@ def quiz():
         session.modified = True
         return redirect(url_for("quiz"))
 
+    # Перемешиваем варианты ответов
+    options = [questions[current]["answer"]] + questions[current].get("options", [])
+    random.shuffle(options)
+
     return render_template(
         "quiz.html",
         show_result=False,
         question=questions[current]["question"],
+        options=options,
         current=current + 1,
         total=total,
         score=score,
