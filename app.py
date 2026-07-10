@@ -1,29 +1,77 @@
 from flask import Flask, request, render_template, session, redirect, url_for
-from questions import questions
-import random
+from gigachat import GigaChat
+from dotenv import load_dotenv
+import os
+import json
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "секретный ключ для сессий"
 
 
+def get_questions(topic, count):
+    """Генерирует вопросы через GigaChat"""
+    client = GigaChat(
+        credentials=os.getenv("GIGACHAT_SECRET"),
+        user=os.getenv("GIGACHAT_CLIENT_ID"),
+        verify_ssl_certs=False
+    )
+
+    prompt = f"""
+    Сгенерируй {count} вопросов для викторины на тему "{topic}".
+    Верни ТОЛЬКО JSON-массив в таком формате:
+    [{{"question": "Вопрос?", "answer": "правильный ответ"}}]
+    Ответы должны быть краткими (1-3 слова).
+    Не добавляй комментарии, только JSON.
+    """
+
+    response = client.chat(prompt)
+    raw = response.choices[0].message.content.strip()
+
+    if raw.startswith("```"):
+        raw = raw.split("\n", 1)[1]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+
+    return json.loads(raw)
+
+
 @app.route("/", methods=["GET", "POST"])
-def quiz():
-    # Если нет order или current — полная инициализация
-    if "current" not in session or "order" not in session:
+def index():
+    if request.method == "POST":
+        topic = request.form.get("topic", "").strip()
+        count = int(request.form.get("count", 5))
+
+        if not topic:
+            return render_template("index.html", error="Введите тему")
+
+        try:
+            questions = get_questions(topic, count)
+        except Exception as e:
+            return render_template("index.html", error=f"Ошибка генерации: {e}")
+
+        session["questions"] = questions
         session["current"] = 0
         session["score"] = 0
         session["result"] = None
         session["color"] = None
-        shuffled = questions.copy()
-        random.shuffle(shuffled)
-        session["order"] = [q["question"] for q in shuffled]
-        session["answers"] = [q["answer"] for q in shuffled]
+        session["topic"] = topic
 
+        return redirect(url_for("quiz"))
+
+    return render_template("index.html")
+
+
+@app.route("/quiz", methods=["GET", "POST"])
+def quiz():
+    if "questions" not in session:
+        return redirect(url_for("index"))
+
+    questions = session["questions"]
     current = session["current"]
     score = session["score"]
-    total = len(session["order"])
-    question_text = session["order"][current] if current < total else ""
-    correct_answer = session["answers"][current] if current < total else ""
+    total = len(questions)
 
     if current >= total:
         return render_template(
@@ -37,7 +85,7 @@ def quiz():
     color = session.get("color")
 
     if result:
-        prev_question = session["order"][current - 1]
+        prev_question = questions[current - 1]["question"]
         return render_template(
             "quiz.html",
             show_result=True,
@@ -51,6 +99,7 @@ def quiz():
 
     if request.method == "POST":
         user_answer = request.form.get("answer", "").strip().lower()
+        correct_answer = questions[current]["answer"]
 
         if user_answer == correct_answer.lower():
             result = "Правильно!"
@@ -69,7 +118,7 @@ def quiz():
     return render_template(
         "quiz.html",
         show_result=False,
-        question=question_text,
+        question=questions[current]["question"],
         current=current + 1,
         total=total,
         score=score,
@@ -88,7 +137,7 @@ def next_question():
 @app.route("/restart")
 def restart():
     session.clear()
-    return redirect(url_for("quiz"))
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

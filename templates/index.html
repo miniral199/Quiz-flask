@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать викторину</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h1 {
+            font-size: 26px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        input, select {
+            font-size: 18px;
+            padding: 14px 18px;
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            transition: border 0.3s;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        input:focus {
+            border-color: #667eea;
+        }
+        button {
+            font-size: 18px;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+        .error {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Умная викторина</h1>
+        <p class="subtitle">Введите тему — нейросеть сгенерирует вопросы</p>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST">
+            <input type="text" name="topic" placeholder="Тема (например: Древний Рим)" required>
+            <input type="number" name="count" value="5" min="1" max="20" placeholder="Количество вопросов">
+            <button type="submit">🚀 Создать викторину</button>
+        </form>
+    </div>
+</body>
+</html>
